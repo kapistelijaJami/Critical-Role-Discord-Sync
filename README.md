@@ -38,7 +38,7 @@ While sync is driving the chat, the script hides Discord's "Jump to Present" bar
 
 Scrolling the chat yourself pauses auto-follow. Seeking, pressing play, or clicking the badge resumes it.
 
-If you want to watch cooldowns as well you have to manually set the start time in the settings by adding the episode length to the original start time, so you get the start time of when people started watching the cooldown.
+If you want to watch cooldowns as well you have to manually set the start time in the settings by adding the episode length to the original start time, so you get the start time of when people started watching the cooldown. You can also sync any video from beacon, but might need to set the chat start timing manually.
 
 ## Menu commands (Discord tab)
 
@@ -57,7 +57,6 @@ Offsets and overrides are stored per episode title. The menu commands only work 
 ## Notes and limitations
 
 - The start time is read from the episode page's structured data, so it follows daylight saving changes automatically. If the chat is a few minutes off, use the nudge commands, set an offset, or set the start time manually.
-- Only Campaign 4 episodes are detected (titles like `C4 E037 | Title`). Other series would need changes to the title check and the channel.
 - Beacon and Discord can change their page structure at any time, which may break the script. The Discord class-name selectors in particular may need updating.
 
 ## Troubleshooting
