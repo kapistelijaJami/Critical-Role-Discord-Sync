@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         Critical Role Video ↔ Discord Sync
 // @namespace    http://tampermonkey.net/
-// @version      2026-10-03
+// @version      1.0.0
 // @description  Sync video events from Beacon to Discord and keep live chat in sync
 // @author       You
+// @updateURL    https://raw.githubusercontent.com/kapistelijaJami/Critical-Role-Discord-Sync/main/Critical-Role-Discord-Sync.user.js
+// @downloadURL  https://raw.githubusercontent.com/kapistelijaJami/Critical-Role-Discord-Sync/main/Critical-Role-Discord-Sync.user.js
 // @match        https://discord.com/*
 // @match        https://beacon.tv/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=beacon.tv
