@@ -13,7 +13,7 @@ It runs on both sites. The Beacon tab reports the video's playback position, and
 ## Installation
 
 1. Install a userscript manager in your browser.
-2. Create a new script in the manager and paste in the contents of `Critical Role Video ↔ Discord Sync.user.js` or open the [file's raw URL](https://github.com/kapistelijaJami/Critical-Role-Discord-Sync/raw/refs/heads/main/Critical%20Role%20Video%20%E2%86%94%20Discord%20Sync.user.js), and click Install).
+2. Create a new script in the manager and paste in the contents of `Critical Role Video ↔ Discord Sync.user.js` or open the [file's raw URL](https://github.com/kapistelijaJami/Critical-Role-Discord-Sync/raw/refs/heads/main/Critical%20Role%20Video%20%E2%86%94%20Discord%20Sync.user.js), and click Install.
 3. Save. The script activates on `beacon.tv` and `discord.com`.
 4. Reload any open Beacon and Discord tabs.
 
