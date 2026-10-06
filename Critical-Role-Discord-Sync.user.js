@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Critical Role Video ↔ Discord Sync
 // @namespace    http://tampermonkey.net/
-// @version      1.0.0
+// @version      1.0.1
 // @description  Sync video events from Beacon to Discord and keep live chat in sync
 // @author       You
 // @updateURL    https://raw.githubusercontent.com/kapistelijaJami/Critical-Role-Discord-Sync/main/Critical-Role-Discord-Sync.user.js
@@ -27,13 +27,13 @@
     const STATE_KEY = "cr-video-state";
     const CONFIG_KEY = "cr-config";
 
-    const HEARTBEAT_MS = 5000;        // Beacon -> Discord drift correction while playing
-    const SESSION_TIMEOUT_MS = 20000; // no message from Beacon for this long => session over
-    const TICK_MS = 250;              // Discord scroll loop interval
-    const JUMP_COOLDOWN_MS = 4000;    // minimum time between automatic re-jumps
-    const GAP_BEFORE_MS = 30000;      // target this far before loaded messages => re-jump
-    const GAP_AFTER_MS = 120000;      // target this far after loaded messages => re-jump
-    const allowInCooldown = true;     // If true, allows sync in cooldowns too
+    const HEARTBEAT_MS = 5000;           // Beacon -> Discord drift correction while playing
+    const SESSION_TIMEOUT_MS = 20000;    // no message from Beacon for this long => session over
+    const TICK_MS = 250;                 // Discord scroll loop interval
+    const JUMP_COOLDOWN_MS = 4000;       // minimum time between automatic re-jumps
+    const GAP_BEFORE_MS = 30000;         // target this far before loaded messages => re-jump
+    const GAP_AFTER_MS = 120000;         // target this far after loaded messages => re-jump
+    const ALLOW_IN_ANY_CONTENT = true;   // If true, allows sync in any page in /content/ that has a video element.
 
     /* ------------------------------------------------------------
      * Beacon
@@ -58,13 +58,16 @@
         return document.querySelector("h1")?.innerText.trim() ?? "";
     }
 
-    function isEpisodePage() {
+    function isEpisodePage(requireVideo = false) {
         if (!location.pathname.startsWith("/content/")) return false;
         const title = currentTitle();
-        return /^C4\s+E\d+\s*\|\s*\S/i.test(title) && (allowInCooldown || !/cooldown\s*$/i.test(title));
+        if (ALLOW_IN_ANY_CONTENT && title && (!requireVideo || document.querySelector("video"))) {
+            return true;
+        }
+        return /^C4\s+E\d+\s*\|\s*\S/i.test(title);
     }
 
-    // "Original Air Date: October 2, 2026" -> that day at 02:00 UTC
+    // Fallback: "Original Air Date: October 2, 2026" -> that day at 02:00 UTC
     function readAirDateFromPage() {
         for (const el of document.querySelectorAll("span")) {
             const m = el.textContent.match(
@@ -78,7 +81,7 @@
         return null;
     }
 
-    // Fallback: datePublished from the JSON-LD (e.g. 01:45Z), rounded to the nearest hour.
+    // datePublished from the JSON-LD (e.g. 01:45Z), rounded to the nearest hour.
     function readAirDateFromJsonLd(title) {
         for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
             try {
@@ -187,7 +190,7 @@
         document.body.appendChild(button);
 
         function refreshButton() {
-            button.style.display = syncing || isEpisodePage() ? "" : "none";
+            button.style.display = syncing || isEpisodePage(true) ? "" : "none";
             const text = syncing ? "Stop Discord sync" : "Start Discord sync";
             if (button.textContent !== text) button.textContent = text;
         }
