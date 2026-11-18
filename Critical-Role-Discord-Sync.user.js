@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Critical Role Video ↔ Discord Sync
 // @namespace    http://tampermonkey.net/
-// @version      1.0.2
+// @version      1.0.3
 // @description  Sync video events from Beacon to Discord and keep live chat in sync
 // @author       You
 // @updateURL    https://raw.githubusercontent.com/kapistelijaJami/Critical-Role-Discord-Sync/main/Critical-Role-Discord-Sync.user.js
@@ -55,7 +55,13 @@
     };
 
     function currentTitle() {
-        return document.querySelector("h1")?.innerText.trim() ?? "";
+        const ld = readJsonLdEpisode();
+        if (ld?.name) return ld.name.trim();
+
+        const og = document.querySelector('meta[property="og:title"]')?.content?.trim();
+        if (og) return og;
+
+        return document.title.replace(/\s*\|\s*Beacon\s*$/i, "").trim();
     }
 
     function isEpisodePage(requireVideo = false) {
@@ -82,20 +88,29 @@
     }
 
     // datePublished from the JSON-LD (e.g. 01:45Z), rounded to the nearest hour.
-    function readAirDateFromJsonLd(title) {
+    function readAirDateFromJsonLd() {
+        const d = readJsonLdEpisode();
+        if (!d?.datePublished) return null;
+        const ms = Date.parse(d.datePublished);
+        return Number.isNaN(ms) ? null : Math.round(ms / 3600000) * 3600000;
+    }
+
+    function readJsonLdEpisode() {
         for (const s of document.querySelectorAll('script[type="application/ld+json"]')) {
             try {
-                const data = JSON.parse(s.textContent);
-                if (data["@type"] !== "TVEpisode" || data.name?.trim() !== title) continue;
-                const ms = Date.parse(data.datePublished);
-                if (!Number.isNaN(ms)) return Math.round(ms / 3600000) * 3600000;
+                const parsed = JSON.parse(s.textContent);
+                for (const d of Array.isArray(parsed) ? parsed : [parsed]) {
+                    if (d?.["@type"] !== "TVEpisode") continue;
+                    if (d.url && new URL(d.url).pathname !== location.pathname) continue;
+                    return d;
+                }
             } catch (e) {}
         }
         return null;
     }
 
-    function getStreamStart(title) {
-        const ld = readAirDateFromJsonLd(title);
+    function getStreamStart() {
+        const ld = readAirDateFromJsonLd();
         if (ld) return { ms: ld, source: "jsonld" };
 
         const page = readAirDateFromPage();
@@ -107,7 +122,7 @@
     function getEpisodeInfo() {
         if (!isEpisodePage()) return null;
         const title = currentTitle();
-        const start = getStreamStart(title);
+        const start = getStreamStart();
         return start ? { title, streamStartMs: start.ms, startSource: start.source } : null;
     }
 
@@ -137,6 +152,7 @@
                 alert("Couldn't find the episode title or air date on this page.");
                 return;
             }
+            episode.path = location.pathname;
             video = document.querySelector("video");
             if (!video) {
                 episode = null;
@@ -154,7 +170,7 @@
 
             heartbeat = setInterval(() => {
                 // Player replaced, or navigated to a different/non-episode page.
-                if (!video.isConnected || !isEpisodePage() || currentTitle() !== episode.title) {
+                if (!video.isConnected || !isEpisodePage() || location.pathname !== episode.path) {
                     return stop();
                 }
                 report("tick");
